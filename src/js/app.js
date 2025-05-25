@@ -61,6 +61,21 @@ statusRef.on('value', snapshot => {
         drainOnBtn.disabled = false;
         drainOffBtn.disabled = false;
     }
+    
+    // 4) Đồng bộ trạng thái Tưới
+    const irrigateOnBtn = document.getElementById('irrigateOn');
+    const irrigateOffBtn = document.getElementById('irrigateOff');
+    if (status.Irrigate === 'ON') {
+        irrigateOnBtn.classList.add('on-btn');
+        irrigateOffBtn.classList.remove('on-btn');
+        irrigateOnBtn.disabled = false;
+        irrigateOffBtn.disabled = false;
+    } else {
+        irrigateOnBtn.classList.remove('on-btn');
+        irrigateOffBtn.classList.add('off-btn');
+        irrigateOnBtn.disabled = false;
+        irrigateOffBtn.disabled = false;
+    }
 });
 
 function updateModeUI() {
@@ -72,11 +87,17 @@ function updateModeUI() {
 
 // Xử lý điều khiển
 document.getElementById('autoBtn').addEventListener('click', () => {
-    controlRef.child("Mode").set(false);
+    if (currentMode !== 'AUTO') {
+        controlRef.child("Mode").set(true);
+        showNotification('Đã chuyển sang chế độ AUTO');
+    }
 });
 
 document.getElementById('manualBtn').addEventListener('click', () => {
-    controlRef.child("Mode").set(true);
+    if (currentMode !== 'MANUAL') {
+        controlRef.child("Mode").set(false);
+        showNotification('Đã chuyển sang chế độ MANUAL');
+    }
 });
 
 function handleControl(refName, state) {
@@ -92,5 +113,5 @@ document.getElementById('pumpOn').onclick = () => handleControl('Pump', true);
 document.getElementById('pumpOff').onclick = () => handleControl('Pump', false);
 document.getElementById('drainOn').onclick = () => handleControl('Drain', true);
 document.getElementById('drainOff').onclick = () => handleControl('Drain', false);
-document.getElementById('irrigateOn').onclick = () => handleControl('Irrigate', true);
-document.getElementById('irrigateOff').onclick = () => handleControl('Irrigate', false); 
+document.getElementById('irrigateOn').onclick = () => handleControl('Irrigation', true);
+document.getElementById('irrigateOff').onclick = () => handleControl('Irrigation', false); 
