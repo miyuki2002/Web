@@ -20,7 +20,20 @@ sensorRef.on('value', snapshot => {
     document.getElementById('soilMoisture').textContent = data.Soilmoisture ?? 'N';
     document.getElementById('phValue').textContent = data.pH ?? 'N';
     document.getElementById('Tds').textContent = (data.TDS ?? 'N') + ' ppm';
-    document.getElementById('temperature').textContent = (data.temp ?? 'N') + ' Độ C';
+    document.getElementById('temperature').textContent = data.Temp ? parseFloat(data.Temp).toFixed(2) + ' Độ C' : 'N Độ C';
+    
+    // Xử lý thông tin thời tiết
+    const rainStatus = data.Rain;
+    const rainDuration = data.RainDuration ?? 0;
+    let weatherText = 'N';
+    
+    if (rainStatus === false || rainStatus === 0) {
+        weatherText = 'Nắng';
+    } else if (rainStatus === true || rainStatus === 1) {
+        weatherText = `Mưa (${rainDuration} phút)`;
+    }
+    
+    document.getElementById('rainStatus').textContent = weatherText;
 });
 
 let currentMode = 'AUTO';
@@ -28,11 +41,11 @@ let currentMode = 'AUTO';
 // Status handling
 statusRef.on('value', snapshot => {
     const status = snapshot.val() || {};
-    // 1) Cập nhật chế độ
+    // Cập nhật chế độ
     currentMode = status.Mode || 'AUTO';
     updateModeUI();
 
-    // 2) Đồng bộ trạng thái Bơm
+    // Đồng bộ trạng thái Bơm
     const pumpOnBtn = document.getElementById('pumpOn');
     const pumpOffBtn = document.getElementById('pumpOff');
     if (status.Pump === 'ON') {
@@ -47,7 +60,7 @@ statusRef.on('value', snapshot => {
         pumpOffBtn.disabled = false;
     }
 
-    // 3) Đồng bộ trạng thái Xả
+    // Đồng bộ trạng thái Xả
     const drainOnBtn = document.getElementById('drainOn');
     const drainOffBtn = document.getElementById('drainOff');
     if (status.Drain === 'ON') {
@@ -62,7 +75,7 @@ statusRef.on('value', snapshot => {
         drainOffBtn.disabled = false;
     }
     
-    // 4) Đồng bộ trạng thái Tưới
+    // Đồng bộ trạng thái Tưới
     const irrigateOnBtn = document.getElementById('irrigateOn');
     const irrigateOffBtn = document.getElementById('irrigateOff');
     if (status.Irrigate === 'ON') {
