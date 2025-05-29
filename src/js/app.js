@@ -24,7 +24,7 @@ sensorRef.on('value', snapshot => {
     
     // Xử lý thông tin thời tiết
     const rainStatus = data.Rain;
-    const rainDuration = data.RainDuration ?? 0;
+    const rainDuration = data.Raintime ?? 0;
     let weatherText = 'N';
     
     if (rainStatus === false || rainStatus === 0) {
