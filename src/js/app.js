@@ -42,7 +42,7 @@ sensorRef.on('value', snapshot => {
     document.getElementById('waterLevel').textContent = (data.waterlevel ?? 'N') + '%';
     document.getElementById('soilMoisture').textContent = data.Soilmoisture ?? 'N';
     document.getElementById('phValue').textContent = data.pH ?? 'N';
-    document.getElementById('Tds').textContent = (data.TDS ?? 'N') + ' ppm';
+    document.getElementById('Tds').textContent = data.TDS ? parseFloat(data.TDS).toFixed(2) + ' ppm' : 'N ppm';
     document.getElementById('temperature').textContent = data.Temp ? parseFloat(data.Temp).toFixed(2) + ' Độ C' : 'N Độ C';
     
     const rainStatus = data.Rain;
