@@ -163,14 +163,19 @@ tr:nth-child(even) {
     gap: 10px;
 }
 
-.on-btn { 
-    background: var(--accent-color); 
+.btn-on-active { 
+    background: var(--secondary-color); /* Xanh lá */
     color: white; 
 }
 
-.off-btn { 
-    background: #f5f5f5; 
-    color: #666; 
+.btn-off-active { 
+    background: var(--accent-color); /* Đỏ */
+    color: white; 
+}
+
+.btn-inactive {
+    background: #95a5a6; /* Xám */
+    color: white;
 }
 
 .active-mode { 

@@ -22,7 +22,6 @@ sensorRef.on('value', snapshot => {
     document.getElementById('Tds').textContent = (data.TDS ?? 'N') + ' ppm';
     document.getElementById('temperature').textContent = data.Temp ? parseFloat(data.Temp).toFixed(2) + ' Độ C' : 'N Độ C';
     
-    // Xử lý thông tin thời tiết
     const rainStatus = data.Rain;
     const rainDuration = data.Raintime ?? 0;
     let weatherText = 'N';
@@ -41,6 +40,8 @@ let currentMode = 'AUTO';
 // Status handling
 statusRef.on('value', snapshot => {
     const status = snapshot.val() || {};
+    console.log('Status from Firebase:', status);
+    
     // Cập nhật chế độ
     currentMode = status.Mode || 'AUTO';
     updateModeUI();
@@ -48,46 +49,61 @@ statusRef.on('value', snapshot => {
     // Đồng bộ trạng thái Bơm
     const pumpOnBtn = document.getElementById('pumpOn');
     const pumpOffBtn = document.getElementById('pumpOff');
+    
+    pumpOnBtn.className = pumpOnBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
+    pumpOffBtn.className = pumpOffBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
+    
+    console.log('Pump status:', status.Pump); // Debug
+    
     if (status.Pump === 'ON') {
-        pumpOnBtn.classList.add('on-btn');
-        pumpOffBtn.classList.remove('on-btn');
-        pumpOnBtn.disabled = false;
-        pumpOffBtn.disabled = false;
+        pumpOnBtn.classList.add('btn-on-active');
+        pumpOffBtn.classList.add('btn-inactive');
+    } else if (status.Pump === 'OFF') {
+        pumpOnBtn.classList.add('btn-inactive');
+        pumpOffBtn.classList.add('btn-off-active');
     } else {
-        pumpOnBtn.classList.remove('on-btn');
-        pumpOffBtn.classList.add('off-btn');
-        pumpOnBtn.disabled = false;
-        pumpOffBtn.disabled = false;
+        pumpOnBtn.classList.add('btn-inactive');
+        pumpOffBtn.classList.add('btn-inactive');
     }
 
     // Đồng bộ trạng thái Xả
     const drainOnBtn = document.getElementById('drainOn');
     const drainOffBtn = document.getElementById('drainOff');
+    
+    drainOnBtn.className = drainOnBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
+    drainOffBtn.className = drainOffBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
+    
+    console.log('Drain status:', status.Drain); // Debug
+    
     if (status.Drain === 'ON') {
-        drainOnBtn.classList.add('on-btn');
-        drainOffBtn.classList.remove('on-btn');
-        drainOnBtn.disabled = false;
-        drainOffBtn.disabled = false;
+        drainOnBtn.classList.add('btn-on-active');
+        drainOffBtn.classList.add('btn-inactive');
+    } else if (status.Drain === 'OFF') {
+        drainOnBtn.classList.add('btn-inactive');
+        drainOffBtn.classList.add('btn-off-active');
     } else {
-        drainOnBtn.classList.remove('on-btn');
-        drainOffBtn.classList.add('off-btn');
-        drainOnBtn.disabled = false;
-        drainOffBtn.disabled = false;
+        drainOnBtn.classList.add('btn-inactive');
+        drainOffBtn.classList.add('btn-inactive');
     }
     
     // Đồng bộ trạng thái Tưới
     const irrigateOnBtn = document.getElementById('irrigateOn');
     const irrigateOffBtn = document.getElementById('irrigateOff');
-    if (status.Irrigate === 'ON') {
-        irrigateOnBtn.classList.add('on-btn');
-        irrigateOffBtn.classList.remove('on-btn');
-        irrigateOnBtn.disabled = false;
-        irrigateOffBtn.disabled = false;
+    
+    irrigateOnBtn.className = irrigateOnBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
+    irrigateOffBtn.className = irrigateOffBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
+    
+    console.log('Irrigation status:', status.Irrigation); // Debug
+    
+    if (status.Irrigation === 'ON') {
+        irrigateOnBtn.classList.add('btn-on-active');
+        irrigateOffBtn.classList.add('btn-inactive');
+    } else if (status.Irrigation === 'OFF') {
+        irrigateOnBtn.classList.add('btn-inactive');
+        irrigateOffBtn.classList.add('btn-off-active');
     } else {
-        irrigateOnBtn.classList.remove('on-btn');
-        irrigateOffBtn.classList.add('off-btn');
-        irrigateOnBtn.disabled = false;
-        irrigateOffBtn.disabled = false;
+        irrigateOnBtn.classList.add('btn-inactive');
+        irrigateOffBtn.classList.add('btn-inactive');
     }
 });
 
