@@ -7,28 +7,100 @@ const controlRef = db.ref('Control');
 
 const notify = document.getElementById('notify');
 
-// Hàm hiển thị thời gian thực
-function updateCurrentTime() {
+// Biến toàn cục cho lịch
+let currentDate = new Date();
+
+// Tên các tháng bằng tiếng Việt
+const monthNames = [
+    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+];
+
+// Hàm tạo lịch tháng
+function generateCalendar(year, month) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = (firstDay.getDay() + 6) % 7;
+    
+    const calendarDates = document.getElementById('calendarDates');
+    const currentMonthEl = document.getElementById('currentMonth');
+    
+    // Cập nhật tiêu đề tháng
+    currentMonthEl.textContent = `${monthNames[month]} ${year}`;
+    calendarDates.innerHTML = '';
+    
+    // Thêm các ngày của tháng trước (nếu cần)
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
+    const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+    
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+        const dateEl = document.createElement('div');
+        dateEl.className = 'calendar-date other-month';
+        dateEl.textContent = daysInPrevMonth - i;
+        calendarDates.appendChild(dateEl);
+    }
+    
+    // Thêm các ngày của tháng hiện tại
+    const today = new Date();
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateEl = document.createElement('div');
+        dateEl.className = 'calendar-date';
+        dateEl.textContent = day;
+        
+        // Highlight ngày hiện tại
+        if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+            dateEl.classList.add('today');
+        }
+        
+        calendarDates.appendChild(dateEl);
+    }
+    
+    const totalCells = calendarDates.children.length;
+    const remainingCells = 42 - totalCells;
+    
+    for (let day = 1; day <= remainingCells; day++) {
+        const dateEl = document.createElement('div');
+        dateEl.className = 'calendar-date other-month';
+        dateEl.textContent = day;
+        calendarDates.appendChild(dateEl);
+    }
+}
+
+// Hàm cập nhật thời gian nhỏ
+function updateSmallTime() {
     const now = new Date();
-    
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = now.getFullYear();
-    
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     
-    const dateTimeString = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-    
-    const dateTimeElement = document.getElementById('currentDateTime');
-    if (dateTimeElement) {
-        dateTimeElement.textContent = dateTimeString;
+    const timeElement = document.getElementById('currentTimeSmall');
+    if (timeElement) {
+        timeElement.textContent = `${hours}:${minutes}:${seconds}`;
     }
 }
 
-updateCurrentTime();
-setInterval(updateCurrentTime, 1000);
+// Hàm khởi tạo lịch
+function initializeCalendar() {
+    generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    updateSmallTime();
+    
+    // Xử lý nút điều hướng
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    });
+    
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    });
+}
+
+// Khởi tạo lịch và cập nhật thời gian
+initializeCalendar();
+setInterval(updateSmallTime, 1000);
 
 function showNotification(msg) {
     notify.textContent = msg;
@@ -65,7 +137,6 @@ statusRef.on('value', snapshot => {
     const status = snapshot.val() || {};
     console.log('Status from Firebase:', status);
     
-    // Cập nhật chế độ
     currentMode = status.Mode || 'AUTO';
     updateModeUI();
 
@@ -75,8 +146,6 @@ statusRef.on('value', snapshot => {
     
     pumpOnBtn.className = pumpOnBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     pumpOffBtn.className = pumpOffBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
-    
-    console.log('Pump status:', status.Pump); // Debug
     
     if (status.Pump === 'ON') {
         pumpOnBtn.classList.add('btn-on-active');
@@ -96,8 +165,6 @@ statusRef.on('value', snapshot => {
     drainOnBtn.className = drainOnBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     drainOffBtn.className = drainOffBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     
-    console.log('Drain status:', status.Drain); // Debug
-    
     if (status.Drain === 'ON') {
         drainOnBtn.classList.add('btn-on-active');
         drainOffBtn.classList.add('btn-inactive');
@@ -116,8 +183,6 @@ statusRef.on('value', snapshot => {
     irrigateOnBtn.className = irrigateOnBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     irrigateOffBtn.className = irrigateOffBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     
-    console.log('Irrigation status:', status.Irrigation); // Debug
-    
     if (status.Irrigation === 'ON') {
         irrigateOnBtn.classList.add('btn-on-active');
         irrigateOffBtn.classList.add('btn-inactive');
@@ -127,6 +192,24 @@ statusRef.on('value', snapshot => {
     } else {
         irrigateOnBtn.classList.add('btn-inactive');
         irrigateOffBtn.classList.add('btn-inactive');
+    }
+
+    // Đồng bộ trạng thái Mái che
+    const roofOpenBtn = document.getElementById('roofOpen');
+    const roofCloseBtn = document.getElementById('roofClose');
+    
+    roofOpenBtn.className = roofOpenBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
+    roofCloseBtn.className = roofCloseBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
+    
+    if (status.Cover === 'OPEN') {
+        roofOpenBtn.classList.add('btn-on-active');
+        roofCloseBtn.classList.add('btn-inactive');
+    } else if (status.Cover === 'CLOSE') {
+        roofOpenBtn.classList.add('btn-inactive');
+        roofCloseBtn.classList.add('btn-off-active');
+    } else {
+        roofOpenBtn.classList.add('btn-inactive');
+        roofCloseBtn.classList.add('btn-inactive');
     }
 });
 
@@ -166,4 +249,6 @@ document.getElementById('pumpOff').onclick = () => handleControl('Pump', false);
 document.getElementById('drainOn').onclick = () => handleControl('Drain', true);
 document.getElementById('drainOff').onclick = () => handleControl('Drain', false);
 document.getElementById('irrigateOn').onclick = () => handleControl('Irrigation', true);
-document.getElementById('irrigateOff').onclick = () => handleControl('Irrigation', false); 
+document.getElementById('irrigateOff').onclick = () => handleControl('Irrigation', false);
+document.getElementById('roofOpen').onclick = () => handleControl('Cover', true);
+document.getElementById('roofClose').onclick = () => handleControl('Cover', false); 
