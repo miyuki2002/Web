@@ -111,35 +111,47 @@ function showNotification(msg) {
 // Xử lý dữ liệu cảm biến
 sensorRef.on('value', snapshot => {
     const data = snapshot.val() || {};
+    console.log('Sensor data from Firebase:', data); // Debug log
+    
     document.getElementById('waterLevel').textContent = (data.waterlevel ?? 'N') + '%';
     document.getElementById('soilMoisture').textContent = data.Soilmoisture ?? 'N';
     document.getElementById('phValue').textContent = data.pH ?? 'N';
     document.getElementById('Tds').textContent = data.TDS ? parseFloat(data.TDS).toFixed(2) + ' ppm' : 'N ppm';
     document.getElementById('temperature').textContent = data.Temp ? parseFloat(data.Temp).toFixed(2) + ' Độ C' : 'N Độ C';
+});
+
+let currentMode = 'AUTO';
+
+statusRef.on('value', snapshot => {
+    const status = snapshot.val() || {};
+    console.log('Status from Firebase:', status);
     
-    const rainStatus = data.Rain;
-    const rainDuration = data.Raintime ?? 0;
+    const rainStatus = status.RainStatus;
+    const rainDuration = status.RainDuration ?? 0;
+    
     let weatherText = 'N';
     
     if (rainStatus === false || rainStatus === 0) {
         weatherText = 'Nắng';
     } else if (rainStatus === true || rainStatus === 1) {
-        weatherText = `Mưa (${rainDuration} phút)`;
+        weatherText = `Mưa (${rainDuration} giây)`;
     }
-    
     document.getElementById('rainStatus').textContent = weatherText;
-});
-
-let currentMode = 'AUTO';
-
-// Status handling
-statusRef.on('value', snapshot => {
-    const status = snapshot.val() || {};
-    console.log('Status from Firebase:', status);
     
     currentMode = status.Mode || 'AUTO';
     updateModeUI();
-
+    
+    // Hiển thị trạng thái thiết bị từ Status
+    document.getElementById('pumpStatus').textContent = status.Pump || 'N';
+    document.getElementById('drainStatus').textContent = status.Drain || 'N';
+    document.getElementById('irrigationStatus').textContent = status.Irrigation || 'N';
+    document.getElementById('coverStatus').textContent = status.Cover || 'N';
+});
+    
+controlRef.on('value', snapshot => {
+    const control = snapshot.val() || {};
+    console.log('Control data from Firebase:', control);
+    
     // Đồng bộ trạng thái Bơm
     const pumpOnBtn = document.getElementById('pumpOn');
     const pumpOffBtn = document.getElementById('pumpOff');
@@ -147,10 +159,10 @@ statusRef.on('value', snapshot => {
     pumpOnBtn.className = pumpOnBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     pumpOffBtn.className = pumpOffBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     
-    if (status.Pump === 'ON') {
+    if (control.Pump === true || control.Pump === 1) {
         pumpOnBtn.classList.add('btn-on-active');
         pumpOffBtn.classList.add('btn-inactive');
-    } else if (status.Pump === 'OFF') {
+    } else if (control.Pump === false || control.Pump === 0) {
         pumpOnBtn.classList.add('btn-inactive');
         pumpOffBtn.classList.add('btn-off-active');
     } else {
@@ -165,10 +177,10 @@ statusRef.on('value', snapshot => {
     drainOnBtn.className = drainOnBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     drainOffBtn.className = drainOffBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     
-    if (status.Drain === 'ON') {
+    if (control.Drain === true || control.Drain === 1) {
         drainOnBtn.classList.add('btn-on-active');
         drainOffBtn.classList.add('btn-inactive');
-    } else if (status.Drain === 'OFF') {
+    } else if (control.Drain === false || control.Drain === 0) {
         drainOnBtn.classList.add('btn-inactive');
         drainOffBtn.classList.add('btn-off-active');
     } else {
@@ -183,17 +195,17 @@ statusRef.on('value', snapshot => {
     irrigateOnBtn.className = irrigateOnBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     irrigateOffBtn.className = irrigateOffBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     
-    if (status.Irrigation === 'ON') {
+    if (control.Irrigation === true || control.Irrigation === 1) {
         irrigateOnBtn.classList.add('btn-on-active');
         irrigateOffBtn.classList.add('btn-inactive');
-    } else if (status.Irrigation === 'OFF') {
+    } else if (control.Irrigation === false || control.Irrigation === 0) {
         irrigateOnBtn.classList.add('btn-inactive');
         irrigateOffBtn.classList.add('btn-off-active');
     } else {
         irrigateOnBtn.classList.add('btn-inactive');
         irrigateOffBtn.classList.add('btn-inactive');
     }
-
+    
     // Đồng bộ trạng thái Mái che
     const roofOpenBtn = document.getElementById('roofOpen');
     const roofCloseBtn = document.getElementById('roofClose');
@@ -201,10 +213,10 @@ statusRef.on('value', snapshot => {
     roofOpenBtn.className = roofOpenBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     roofCloseBtn.className = roofCloseBtn.className.replace(/\b(btn-on-active|btn-off-active|btn-inactive)\b/g, '').trim();
     
-    if (status.Cover === 'OPEN') {
+    if (control.Cover === true || control.Cover === 1) {
         roofOpenBtn.classList.add('btn-on-active');
         roofCloseBtn.classList.add('btn-inactive');
-    } else if (status.Cover === 'CLOSE') {
+    } else if (control.Cover === false || control.Cover === 0) {
         roofOpenBtn.classList.add('btn-inactive');
         roofCloseBtn.classList.add('btn-off-active');
     } else {
